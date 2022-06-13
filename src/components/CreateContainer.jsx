@@ -9,6 +9,13 @@ import {
 } from "react-icons/md";
 import { categories } from "../utils/data";
 import { Loader } from "./index";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { storage } from "../firebase.config";
 
 const CreateContainer = () => {
   const [title, setTitle] = useState("");
@@ -21,8 +28,58 @@ const CreateContainer = () => {
   const [msg, setMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const uploadImg = () => {};
-  const deleteImg = () => {};
+  const uploadImg = (e) => {
+    setIsLoading(true);
+    const imageFile = e.target.files[0];
+    const storageRef = ref(storage, `Images/${Date.now()}-${imageFile.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const uploadProgress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log(uploadProgress);
+      },
+      (error) => {
+        console.log(error);
+        setFields(true);
+        setMsg("Error while uploading, try again");
+        setAlertStatus("danger");
+        setTimeout(() => {
+          setFields(false);
+          setIsLoading(false);
+        }, 4000);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setImgAsset(downloadURL);
+          setIsLoading(false);
+          setFields(true);
+          setMsg("Image uploaded successfully");
+          setAlertStatus("success");
+          setTimeout(() => {
+            setFields(false);
+          }, 4000);
+        });
+      }
+    );
+  };
+
+  const deleteImg = () => {
+    setIsLoading(true);
+    const deleteRef = ref(storage, imgAsset);
+    deleteObject(deleteRef).then(() => {
+      setImgAsset(null);
+      setIsLoading(false);
+      setFields(true);
+      setMsg("Image deleted successfully");
+      setAlertStatus("success");
+      setTimeout(() => {
+        setFields(false);
+      }, 4000);
+    });
+  };
   const saveDetails = () => {};
 
   return (
