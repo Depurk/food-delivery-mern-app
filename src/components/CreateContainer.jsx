@@ -80,7 +80,39 @@ const CreateContainer = () => {
       }, 4000);
     });
   };
-  const saveDetails = () => {};
+  const saveDetails = () => {
+    setIsLoading(true);
+    try {
+      if (!title || !calories || !imgAsset || !price || !category) {
+        setFields(true);
+        setMsg("Requires fiels cannot be empty");
+        setAlertStatus("danger");
+        setTimeout(() => {
+          setFields(false);
+          setIsLoading(false);
+        }, 4000);
+      } else {
+        const data = {
+          id: `${Date.now()}`,
+          title,
+          imageUrl: imgAsset,
+          category,
+          calories,
+          qty: 1,
+          price,
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      setFields(true);
+      setMsg("Error while uploading, try again");
+      setAlertStatus("danger");
+      setTimeout(() => {
+        setFields(false);
+        setIsLoading(false);
+      }, 4000);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center">
